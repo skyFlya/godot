@@ -1,0 +1,32 @@
+[gd_scene load_steps=4 format=3 uid="uid://br7nnlv246ak4"]
+
+[ext_resource type="Script" path="res://battle/arena_board.gd" id="1_arena"]
+[ext_resource type="Script" path="res://battle/lane_battle_game.gd" id="2_game"]
+[ext_resource type="Script" uid="uid://bsg12huaf1u5i" path="res://addons/godot_mcp/runtime/mcp_runtime_probe.gd" id="3_probe"]
+
+[node name="main_scene" type="Node2D"]
+
+[node name="ArenaBoard" type="Node2D" parent="."]
+script = ExtResource("1_arena")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(360, 640)
+
+[node name="LaneBattleGame" type="Node2D" parent="."]
+script = ExtResource("2_game")
+
+[node name="Units" type="Node2D" parent="LaneBattleGame"]
+
+[node name="UI" type="CanvasLayer" parent="LaneBattleGame"]
+
+[node name="HUD" type="Label" parent="LaneBattleGame/UI"]
+offset_left = 12.0
+offset_top = 8.0
+offset_right = 708.0
+offset_bottom = 72.0
+theme_override_font_sizes/font_size = 17
+text = "三路独立对战 Demo"
+autowrap_mode = 3
+
+[node name="MCPRuntimeProbe" type="Node" parent="."]
+script = ExtResource("3_probe")
