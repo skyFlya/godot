@@ -1,0 +1,21 @@
+cat > .gitignore << 'EOF'
+.godot/
+.import/
+*.import
+*.tmp
+*.bak
+export.cfg
+export_presets.cfg
+logs/
+*.log
+bin/
+build/
+export/
+*.exe
+*.apk
+*.ipa
+*.pck
+*.zip
+.DS_Store
+Thumbs.db
+EOF
