@@ -1,0 +1,61 @@
+---
+description: Godot 编辑器操作必须通过 godot-mcp 执行（节点/脚本/场景读取三类）
+alwaysApply: true
+---
+
+# Godot MCP 强制路由
+
+在本 Godot 项目中，以下 **3 类操作不得仅改磁盘文件**，必须先通过 **godot-mcp**（`http://localhost:9080/mcp`）调用对应工具；若 Cursor 未注册 `godot-mcp`，用 HTTP JSON-RPC 调用 `tools/call`。
+
+用户可用 `@mcp godot-mcp` 触发；**即使用户未写该前缀，AI 也应自动走 MCP**。
+
+## 三类操作与工具映射
+
+### 1. 在 Godot 里创建 / 修改节点
+
+示例：「建一个 2D 玩家」「给 Player 加 Sprite2D」
+
+优先工具：`create_node`、`delete_node`、`update_node_property`、`batch_scene_node_edits`、`save_scene`
+
+参数名注意：`parent_path`、`node_type`、`node_name`（不是 parent/type/name）
+
+### 2. 保存脚本、附加脚本
+
+示例：「把这段代码绑定到 Player」
+
+优先工具：`create_script`、`modify_script`、`attach_script`
+
+`create_script` 可用 `attach_to_node` 一步附加；路径用 `res://...`
+
+### 3. 读取场景、项目信息
+
+示例：「查看当前场景树」「项目信息」
+
+优先工具：`get_scene_tree`、`get_project_info`、`get_node_properties`、`read_script`
+
+## 执行前检查
+
+1. Godot 已打开项目且 **Godot MCP Native** 插件已启用
+2. HTTP 服务在 **9080** 端口（`curl http://localhost:9080/mcp` 应返回 200）
+3. 编辑器中已打开目标场景（否则 `get_scene_tree` / 改节点会失败）
+
+## 补充工具包（默认关闭，用到前提示用户勾选）
+
+在 Godot 编辑器 **MCP 面板** 中按需勾选；未启用时工具会返回 `Tool is disabled`，**不要静默失败**，应明确告诉用户去开哪个包。
+
+| 工具包 | 什么时候开？ |
+|--------|----------------|
+| **Node-Advanced** / **Node-Write-Advanced** | 批量创建敌人/道具节点、复制或批量改节点属性、连信号、设锚点、节点分组 |
+| **Script-Advanced** | 批量改脚本、全项目符号搜索/重命名、`validate_script`、`search_in_files`、跳转到定义 |
+| **Scene-Advanced** | 拆分/合并场景、多场景 tab、`get_scene_structure`、列出/关闭已打开场景 |
+| **Editor-Advanced** | 编辑器设置、选节点/文件、截图、`reload_project`、导出、`open_scene`（Vibe Coding 下常需 `allow_ui_focus`） |
+| **Project-Advanced** | 批量导入/重导入资源、改项目设置、输入映射、Autoload、项目健康检查、跑测试 |
+| **Debug-Advanced** | 运行时探针、F5 后查输入/性能/场景树、`list_runtime_input_actions`、`evaluate_runtime_expression` |
+
+**日常够用（一般保持开启）**：Node-Read/Write、Script、Scene、Editor、Project、Debug 核心组（`create_node`、`modify_script`、`save_scene`、`run_project` 等）。
+
+## 失败时
+
+- 报告 MCP 错误，不要静默改为只写 `.tscn` / `.gd` 了事（除非用户明确要求仅改文件）
+- 若返回 `Tool is disabled`，按上表提示用户勾选对应工具包后重试
+- 提示用户：打开 Godot、启用插件、重新加载场景后再试
